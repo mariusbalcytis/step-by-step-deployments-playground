@@ -1,0 +1,360 @@
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Step by step deployments</title>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <style>
+        img.person {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%
+        }
+        /*.reveal h1, .reveal h2, .reveal h3 {*/
+        /*text-shadow: #333 2px 2px 5px;*/
+        /*}*/
+        .reveal .slides > section.full-image {
+            /*display: flex;*/
+            /*justify-content: center;*/
+            height: 95%;
+        }
+        section.full-image div.img {
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: contain;
+            position: absolute;
+        }
+        .wrapper {
+            position: relative
+        }
+        .striked {
+            position: absolute; left: 0; top: 0; text-decoration: line-through;
+        }
+        .controls {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <h2>Step-by-step deployments and backward compatibility</h2>
+        </section>
+        <section>
+            <h3>I'll be talking about...</h3>
+            <ul>
+                <li>Blue-green deployment</li>
+                <li class="fragment">Rollbacks</li>
+                <li class="fragment">Pitfalls</li>
+                <li class="fragment">Canary deployments</li>
+                <li class="fragment">Feature flags</li>
+            </ul>
+        </section>
+        <section>
+            <h3>Some diagrams and a small demo</h3>
+            <ul>
+                <li><a href="https://viewer.diagrams.net/?tags=%7B%7D&highlight=0000ff&edit=_blank&layers=1&nav=1#R%3Cmxfile%20pages%3D%222%22%3E%3Cdiagram%20id%3D%225tKuHWL2QmqEc3zE76TY%22%20name%3D%22AWS%22%3E1Zddc6IwFIZ%2FjZfd4UOpXlp125l1Z5zR6cdllFPIbuAw8aDQX7%2BJBAGx1p2tbfcKzptDQp6c96AddxRlt5Il4U%2F0QXQcy8867rjjOLbjdtVFK3mh9B2vEALJfZNUCXP%2BAka0jJpyH9aNREIUxJOmuMI4hhU1NCYlbptpzyiaqyYsgJYwXzHRVh%2B4T2G5i%2BtKvwMehOXKtjcoRiJWJpudrEPm47YmuZOOO5KIVNxF2QiEhldyKZ77%2Fsro%2FsUkxHTOA9ny%2FmXcT34E7Mp9EMMn%2F95zrsw21pSXGwZf7d%2BEKCnEAGMmJpV6IzGNfdCzWiqqcqaIiRJtJf4CotwcJksJlRRSJMwoZJwe9ePfeiZ6akTjzMy9C%2FJaMAPJIyCQpRaTzB%2FrQW0mHVZT7aJyrjY7g3ONqVzBCWBlDTIZAJ3Ic4o8TbO2gDmZW0C1C5mrBAmCEd80q42Zog32edW5qhtztH9xzGbeDROpWelusZhp2wiuERwWgarVRN%2BmkRiuCBXumw1I4soXU7YEMcM1J46xSlkiEUa1hKHggR4gXQ31Y8eUBI9htHfqyZPQ00F2kl05ahmH5WXTMfG2MqxrpLDmVc%2B6EG2nRXuYJEKx2SFzrCkyX11umGDxStXyIf2mwbYhJ5gnbFeWW9Vlm1TfAaBzBsC99iEE%2B1%2BnLdmnm9KHNyD3zAbkfakG5LYssSg2oL%2F7mCaf7gHXPvCA1fbA4IgFupeyQLdFbDKa%2FxsmZjqzLF7%2FlY79zIUYodBNfxxjDO%2FDt%2Bu9zXcPsw7Y7l2KcK9FeA5ywxW8%2F5fy9QFl9wjlY53cti9F2Tvi%2FPXvT%2Fd7d3BAyrvcN0%2BF1c%2F83Vjtz5I7%2BQM%3D%3C%2Fdiagram%3E%3Cdiagram%20id%3D%22fVv6K2KWGQ18GB0giycf%22%20name%3D%22Page-2%22%3EnZPfb4IwEMf%2FGh5dgDp0jxvqTBYTM7eZ%2BLI09KRNWkpKVfCvXzsOkfmwbE%2B9%2B%2FT6Pe4HAUlV%2FWxoyVeagQzikNUBmQVxHMVk7A5PmpZM46QFuREMg3qwEWdAGCI9CAbVINBqLa0ohzDTRQGZHTBqjD4Nw%2FZaDrOWNIcbsMmovKVbwSzvqpj0fAki513mKHlobxTtgrGSilOmT1eIzAOSGq1ta6k6Bemb1%2FXl5bzdrRer6rOKjvPE2mX9FI9ascVfnlxKMFDYf0urd84mjd6sX3erD0j2o0pN8Ul4pPKA%2FXoTCrBe23RN5FZJZ0UBebp0IXQOoxUHhg6VIi%2BcnbmvBOPAEYwVbhKPeKEEY17Ra5ReWdW5X7q7ds5xe3rZptP3axh5q9A2452zF1KmWmqXZFbowktiHS4j1D8G%2F0vXosso3T8AWoE1jXuHKmPsUDPc6lO%2FSpN7ZPxqjQgyitubX4T7CTkDh9S5%2FS593139kWT%2BBQ%3D%3D%3C%2Fdiagram%3E%3C%2Fmxfile%3E">
+                    Components on AWS (simplified)</a></li>
+                <li class="fragment">Let's start with a demo</li>
+                <li class="fragment"><a href="https://sequencediagram.org/index.html?presentationMode=readOnly#initialData=C4S2BsFMAIGUQLYAcrQGbgPYHcBQukBDAJ1AGMQiA7YaAYXBEhoJPMsJvsxsJCsjF8hMqABuhYDDo9gfAUIZMaAWgB8M3v0EAuAPIBpADTQxARny4qmKdGIgA5gAtamNNy0KdsYJiTQyAFdiYmZaMll5QVwAE0gRcUlpSO1FRjD1TTlUnQAxAEEASQAZKxsYe2dXdyyo4m85UmgBbFNBAGcQHlwEkAlbWtT8JQyNFK9DEzEAJiA">
+                    Dumb deployment</a></li>
+                <li class="fragment"><a href="https://sequencediagram.org/index.html?presentationMode=readOnly#initialData=C4S2BsFMAICFwK6QLQHMBOlIDtoBNIAHcAewE8BbHYAKBsIEN1QBjER7YaAYXBGvpNW7Bp2gAZEgzxwG4US0jpBzEGw5d4SHiU4MQ2JSuEboAcUw4deg0ZoMWoAG4NgMLTG67g+w8t78nMgAfJLSsvLYiugAXDRhMrByCkohHtY+trHxUonJUUoAPMjI6V42fjEA8gDSADTQTgCMNAHUxcgJESmx0LUNzXQ02CRu0OggqAAWXCQAZuaWuOWZlQDKPszQhgDujUoAziC69o4gLmMWWMvevkYjYxPTswtdSZHRMWs7YCxT0MASItrnQ2kFQrlugVsm98tEQlcrCs7jDIe8eh1ETcKkpqvVGgAmVp8dolWEfXF9fFOInDUYwJ4zaDzOCITy3LJfQGEGgEBzOVzuNkZFE0IA">
+                    Blue-green deployment</a></li>
+                <li class="fragment"><a href="https://sequencediagram.org/index.html?presentationMode=readOnly#initialData=C4S2BsFMAICFwK6QLQHMBOlIDtoBNIAHcAewE8BbHYaAdzAAtpI9UYBjAQwGdJuAofoU7pQ7EMOw0AwuBDUhIsRM5ToAGRKc8cTuFXtI6RaJDjJNeEmjSSUziGxGTyi9ADimHDbvAHT435OdlAAN05gGCsYW3tHZ1l5KWQAPk1tXX1sQ3QALgAlAEZ+dJ1YPQMjVOifOIDckq0yiuyjAB5kZBrYv3i8gHkAaQAaaFDixOoO5FLMyryi3Ogh0fHBfmwSSOh0EFQGGhIAMw8vXB7-I1yAZT9RaCdaMaNuEDsgkJBw7c8sc99LoFJsk0k05q0FgAmRoZcpZHLVRAxAF9Bqbba7faHE6zOHzG70YDsJjAEinP6CYHAVK4lo5AoAZhhzXhVRSv28F1RzPBOWmHP+dSuKzG0Kp01prIWDKWItC0MEkvm026KPqcomcimnSVEIKkNlIzGxQ2WxgmIO0GOcCRtV69VuJEI-AIwTCESitq5AX4QA">
+                    Blue-green deployment with edge cases</a></li>
+                <li class="fragment">Did we encounter the edge case?</li>
+            </ul>
+        </section>
+        <section>
+            <h1>Rollbacks</h1>
+        </section>
+        <section>
+            <h3>Why?</h3>
+            <img class="fragment" src="img/big_red_button.jpeg"/>
+        </section>
+        <section>
+            <h3>Rollbacks: general rules</h3>
+            <ul>
+                <li>Can be initiated at any time</li>
+                <li>Anybody can do it</li>
+                <li>No required communication, decisions, etc.</li>
+            </ul>
+        </section>
+        <section>
+            <h3>Rollbacks: how do they look like?</h3>
+            <ul>
+                <li><a href="https://sequencediagram.org/index.html?presentationMode=readOnly#initialData=C4S2BsFMAICFwK6QLQHMBOlIDtoBNIAHcAewE8BbHYALmnRPHACMBDAYwGsAobw19KHYh+2YNADC4ENT4ChI1mOgAZEqzxxW4Je0jo5gkMNHj4SSSTGsQ2fYYWnoAcUw5L12-e4dQAN1ZgGHMYCStgGzsDKRkxZAA+NQ0tHWw9dBpuJM1YbV19BJCPCK8MrPUcvLT9AB5kZCKwzyiaAHkAaQAaaD8AJm4Y6jrkbJT8jOgO7r7ebmwSIPoQVAALcRIAMxc3XCaSloBlCMFoOwB3Hv0AZxArH3Z-QJhXLF3wyPt5xfRltehN1QVMbVDIHM5gdgraDAEjbV68QZxRJA3KpdKZUao8YJF7uPYfMqYqrpYa4t7NfRtLo9ACMA2kQ3qRLRlMm1L8dLmCxgP1W6y2jXepRoRxIhG4BF8IACi0FFIMQA">
+                    Diagram</a></li>
+            </ul>
+        </section>
+
+        <section>
+            <h1>Pitfalls</h1>
+            <h3 class="fragment">This is NOT about rollbacks</h3>
+            <h3 class="fragment">Goal: all releases are compatible</h3>
+        </section>
+
+        <section>
+            <h1>Cache</h1>
+        </section>
+        <section>
+            <h3>Situation</h3>
+            <ul>
+                <li>Fetch some data</li>
+                <li>Save into cache (Redis, etc)</li>
+                <li>New application version uses new cache structure</li>
+                <li>We try to clear the cache when deploying</li>
+            </ul>
+        </section>
+        <section>
+            <pre><code data-trim data-noescape>
+const redis = require('redis');
+const axios = require('axios');
+
+export function retrieveSomething() {
+    let cached = redis.get('cached_something')
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    let actual = axios.get('...');
+    let structure = formatUsingV2Structure(actual);
+    redis.set('cached_something', structure);
+    return structure;
+}
+            </code></pre>
+        </section>
+        <section>
+            <h3>Cache</h3>
+            <ul>
+                <li>Problems? Yes</li>
+                <li class="fragment"><a href="https://sequencediagram.org/index.html?presentationMode=readOnly#initialData=C4S2BsFMAIGEEMDGALGkAmBzGj4GdI8AoIgB3gCdRERyA7YOcESBsy62+B6AGQHt46aACF44bokgV2VEDXqMR4AK4xY-BvBB1pszougBxCpFZxNwbbplEkoAG7xgMZWotade2M1bAAtAB8AkKi4pLSAFwASgCMRCHCYhJ0UhRBbuqW1lFEmR5WXumB0RggeJEAYpDAKHmqWZ42ADz+-qXo5TE1KhR00A7xiWEpaa3++RpNUQDyANIANAPxPiwM48PJERQxsZHQ80uDJER0-C7QFCCYyIz8AGbGpuZThTaRAMpWVNC6AO4DaR4ECaIgmMz9V45YodLqIKCUOyIRzOGDgl7ZIokVZ+IKbcKpKLRABMCUESQJaQyDQK0Mip3OMCuNzuj3xoyiHz+YBQ0GA-CeEOxvgYePJI22MQAzGTQltCcV0ZDMe96u4oUUgrCKtVasg1Y03tJxtrIgA5AW4FCQA20zUlMoVL78UzLMHPZXTGGOqo1OpKu0tNqm0rAXr9Y4BjU2IJRlVRACiAA9SJBkRgBsSlvdtOBZRSORRxnGvVUAIIASV4RBx6za7Ml0Sl+0qlerJAbCvGk3jO0ObtrwA24vlaRixP2-eODIuzNu0Aeohp0c5-NIRHQkHsICcFx7XqIQA"
+                    >Diagram</a></li>
+            </ul>
+        </section>
+        <section>
+            <h3>Cache: summary</h3>
+            <ul>
+                <li>Resetting cache during a release is not reliable</li>
+                <li class="fragment">Use prefixes for each release/cache structure version</li>
+                <li class="fragment">Warm up cache before switching release if possible</li>
+            </ul>
+        </section>
+        <section>
+            <h1>Database migrations</h1>
+        </section>
+        <section>
+            <h3>Situation</h3>
+            <ul>
+                <li>We have transfers with money field</li>
+                <li>Format: "100 EUR"</li>
+                <li>We want to make several columns: 100, EUR</li>
+            </ul>
+        </section>
+        <section>
+            <pre><code data-trim data-noescape>
+ALTER TABLE transfers ADD amount DECIMAL DEFAULT NULL;
+ALTER TABLE transfers ADD currency VARCHAR(255) DEFAULT NULL;
+
+UPDATE transfers
+SET amount = LEFT(money, LOCATE(" ", money) - 1),
+    currency = SUBSTRING(money, LOCATE(" ", money) + 1);
+
+ALTER TABLE transfers DROP COLUMN money;
+
+ALTER TABLE transfers ALTER COLUMN amount DECIMAL NOT NULL;
+ALTER TABLE transfers ALTER COLUMN currency VARCHAR(255) NOT NULL;
+            </code></pre>
+        </section>
+        <section>
+            <h3>Problems?</h3>
+            <ul>
+                <li class="fragment">Oh yes!</li>
+                <li class="fragment"><a href="https://sequencediagram.org/index.html?presentationMode=readOnly#initialData=C4S2BsFMAIBECFqQCYHMYGMCGBnSOAoAgBywCdQMRSA7YaecAVxgGEB7OrEGyMk8pWpY60AOJlIkGtA5cefIlgygAblmAxGLWZ2Dde-bWz0G+AWgB8CAFwBlAKIAZB6wAq0ALadIATwLGuvKGADzm5rYARACMAAyx0A4AqgBKkUQENOya0GQgqAAW9OwAZuKS0kH6CmT2+hTQvADu0Kp8OCCcBBJSMnLVhla2ALL5ZBqQAcwmwRbW8DYAkgByjike3ry+0AC80JEATPGJqZEANNAgyLvQB90VfaY1YRELo6jjoJzQyD4EymoJuVelUzPwpjp+mChgtHC53F4fP5AlDnuFbAAxACCiycNmgy3Y0BwTAwBWgGHYzE8NEy2RgeUKxTKKKehjq7GIBGQkABIHUOVZs3B9xBqMG83szlcHiw3iYogA6gAJBwpByXa57O49SrivgvWzLJJOJwEIA">
+                    Diagram</a></li>
+                <li class="fragment">Don't forget about rollbacks, too</li>
+            </ul>
+        </section>
+
+        <section>
+            <h3>First: prepare</h3>
+            <ul>
+                <li>Add new columns, do not remove old ones</li>
+                <li>Always insert both old and new values</li>
+                <li>Support both new and old columns</li>
+            </ul>
+        </section>
+        <section>
+            <pre><code data-trim data-noescape>
+ALTER TABLE transfers ADD amount DECIMAL DEFAULT NULL;
+ALTER TABLE transfers ADD currency VARCHAR(255) DEFAULT NULL;
+            </code></pre>
+        </section>
+        <section>
+            <h3>Second: migrate to new functionality</h3>
+            <ul>
+                <li>Make old column nullable</li>
+                <li>Migrate data from old to new columns</li>
+                <li>Only use new columns in code</li>
+                <li>We can rollback as new columns are handled by previous release</li>
+            </ul>
+        </section>
+        <section>
+            <pre><code data-trim data-noescape>
+UPDATE transfers
+SET amount = LEFT(money, LOCATE(" ", money) - 1),
+    currency = SUBSTRING(money, LOCATE(" ", money) + 1);
+            </code></pre>
+        </section>
+        <section>
+            <h3>Third: cleanup!</h3>
+            <ul>
+                <li>Remove old column</li>
+                <li>Make new columns not nullable</li>
+            </ul>
+        </section>
+        <section>
+            <pre><code data-trim data-noescape>
+ALTER TABLE transfers DROP COLUMN money;
+
+ALTER TABLE transfers ALTER COLUMN amount DECIMAL NOT NULL;
+ALTER TABLE transfers ALTER COLUMN currency VARCHAR(255) NOT NULL;
+            </code></pre>
+        </section>
+
+        <section>
+            <h1>We've done it!</h1>
+            <h2>What's now?</h2>
+        </section>
+        <section>
+            <h1>Canary deployments</h1>
+        </section>
+        <section>
+            <h3>How does it work?</h3>
+            <ul>
+                <li><a href="https://sequencediagram.org/index.html?presentationMode=readOnly#initialData=C4S2BsFMAIGEEMB28BOBPAUBgDq0BjEXRYaAGQHt4ATaAIXnCX0hRzxEONLvAFcYsCiXghErdigJEkpAOIpIkRHGHBR4thnj5QAN3jAYvAapFiJlGvUbNWAWgB8JwWo2sAXFgyIKR6CggAOYAFqQUAGbQCkoqQuaaHgDK6lLQ4gDu0HqsAM4gwtq6IAb+Mcpm6hZsvv6BoeFRVrQMTIgsKMkZYPgh0MAU0YrK3hjNNm0dTi6V7p1jVC227Q7O-K4JngvWrXYo0+uz1V7juyv7juVxbscAjAAMAKTQABQRFCjQkAAe8AC22CgAEptktJqsZvEqolQRM9gdTFC5idFnDzgiNtCtqdllM1oibjCceCLpDCdjUWc8WTNvNifD8ZjkbCqasrkdEg9nm8Pl9fgDgSzcRDDkjjj4-DB6mFoJF6KLyZ0AIIRIyfW72W4AVmgfzEQpJTnZYsSSvA4H6ISlkAAjgJcsBcgaGcbFR4AHSeiV1YIyuU0rGdFIUbAYaiQHT6QzGBW0oA">
+                    Diagram</a></li>
+                <li class="fragment">Rollback in case health check fails</li>
+                <li class="fragment">Simplest health check: 200 responses</li>
+                <li class="fragment">Can be automated to contain any custom logic</li>
+                <li class="fragment">Automated rollback! (with low impact)</li>
+            </ul>
+        </section>
+        <section>
+            <h3>Any caveats?</h3>
+            <ul>
+                <li><a href="https://sequencediagram.org/index.html?presentationMode=readOnly#initialData=C4S2BsFMAIGEEMB28BOBPAXNAxvAbpPMAM4BQpADqqNiFYsHOCJA5dSLfYwELgCuMWAHsG8EIkgp2KGnSSMA4ikis4o4OMnTSsZq2ABaAHzLVidWIlSMigKIAVaAHoARkgDWZPSwYAeQ0MzNRErbQwAbQAiYXAAEyiAGmgoyQB3KIBdch8DEz5BS01rFAwABQB5AGUnAG8o90QPKIxUyAyAX119f0CCoQ0tGwA5YWhifmwAC2hGj2TiYRR0AEIgA">
+                    Diagram</a></li>
+                <li class="fragment">Feature flags to the rescue!</li>
+            </ul>
+        </section>
+        <section>
+            <h1>Feature flags</h1>
+        </section>
+        <section>
+            <h3>What are feature flags?</h3>
+            <ul>
+                <li>Ability to enable features using flags, or toggles. Duh</li>
+            </ul>
+        </section>
+        <section>
+            <pre><code data-trim data-noescape>
+ff = require('some-fancy-feature-flag-repo');
+
+if (ff.isEnabled(ONBOARDING_NEW_FLOW_FLAG, userData)) {
+    // do new stuff here
+}
+            </code></pre>
+        </section>
+        <section>
+            <h3>No need to complicate!</h3>
+            <p>These can also be considered as "feature flags":</p>
+            <ul>
+                <li>Building a page without updating the menu with the link</li>
+                <li>Adding new fields to the API without updating the docs</li>
+                <li>Adding an if statement with hardcoded user ID :vomit:
+                    <ul class="fragment">
+                        <li>It's ok, as it must be removed afterwards either way</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Important to keep them consistent!</h3>
+            <ul>
+                <li>User #1 calls Service A</li>
+                <li>Service A calls Service B</li>
+                <li>If Service A has feature enabled, but Service B doesn't – we have a problem</li>
+                <li class="fragment">Best to use only with the user-facing part</li>
+            </ul>
+        </section>
+        <section>
+            <h3>Additional goodies</h3>
+            <ul>
+                <li>Disable a feature in case of any problems (rollbacks)</li>
+                <li class="fragment">Release feature gradually (canary releases)</li>
+                <li class="fragment">Perform A/B tests</li>
+                <li class="fragment">Test in production</li>
+            </ul>
+        </section>
+
+        <section>
+            <h1>Let's summarize!</h1>
+        </section>
+        <section>
+            <ul>
+                <li>Race conditions sucks!</li>
+                <li class="fragment">Think about deployments</li>
+                <li class="fragment">Think about <strong>rollbacks</strong></li>
+                <li class="fragment">Canary deployments reduce risk of impact</li>
+                <li class="fragment">
+                    Feature flags allow controlling rollouts, among other things
+                    <ul><li>Useful, but might get costly and need cleanups</li></ul>
+                </li>
+            </ul>
+        </section>
+    </div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+<script>
+    // More info https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize({
+        history: true,
+
+        // More info https://github.com/hakimel/reveal.js#dependencies
+        dependencies: [
+            { src: 'plugin/markdown/marked.js' },
+            { src: 'plugin/markdown/markdown.js' },
+            { src: 'plugin/notes/notes.js', async: true },
+            { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+    });
+</script>
+</body>
+</html>
